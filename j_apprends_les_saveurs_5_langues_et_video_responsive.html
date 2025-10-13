@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>J'apprends les saveurs — 5 langues + vidéo (Responsive)</title>
+  <style>
+    :root{
+      --container-w: min(100vw, 1100px);
+      --canvas-h: 70vh; /* base height for desktop */
+    }
+
+    *{box-sizing:border-box}
+    html, body{margin:0; padding:0;}
+    body{display:flex; flex-direction:column; align-items:center; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+
+    /* Language buttons row */
+    .lang-buttons{display:flex; flex-wrap:wrap; gap:.5rem; padding:12px; width:var(--container-w); justify-content:center}
+    .lang-buttons button{padding:.5rem .75rem; font-size:clamp(.9rem, 1.5vw, 1rem); border:1px solid #aaa; background:#fff; border-radius:8px; cursor:pointer}
+    .lang-buttons button[aria-pressed="true"]{background:#111; color:#fff; border-color:#111}
+
+    /* Main container */
+    .canvas-container{width:var(--container-w); display:flex; flex-direction:column; align-items:center; gap:10px; padding:8px}
+
+    /* Score (drawn on canvas aussi, fallback visible ici) */
+    .score-text{font-weight:600; font-size:clamp(1rem, 2.2vw, 1.25rem); text-align:center; width:100%}
+
+    /* Video responsive, objectif ~20vw x 25vh sur desktop */
+    .educative-video{ width:min(90vw, 22vw); height:25vh; max-width:440px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.12)}
+
+    /* Canvas : largeur fluide ; hauteur contrôlée par CSS, netteté assurée en JS (DPR) */
+    canvas{ width:80%; height:var(--canvas-h); border:1px solid #333; border-radius:12px }
+
+    footer{ width:100%; padding:18px 10px; text-align:center; color:#666 }
+
+    /* Breakpoints */
+    @media (max-width: 900px){
+      :root{ --canvas-h: 70vh }
+      .educative-video{ width:min(92vw, 320px); height:24vh }
+    }
+    @media (max-width: 600px){
+      :root{ --canvas-h: 70vh }
+      .educative-video{ width:min(94vw, 300px); height:22vh }
+    }
+    @media (max-width: 420px){
+      :root{ --canvas-h: 70vh }
+      .educative-video{ width:95vw; height:21vh }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="lang-buttons" aria-label="Sélection de la langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en">EN</button>
+    <button data-lang="es">ES</button>
+    <button data-lang="de">DE</button>
+    <button data-lang="it">IT</button>
+  </nav>
+
+  <section class="canvas-container" aria-label="Zone de jeu">
+    <div class="score-text" id="scoreText">Score : 0/10</div>
+    <video class="educative-video" controls aria-label="Vidéo éducative">
+      <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+      Votre navigateur ne supporte pas la lecture vidéo.
+    </video>
+    <canvas id="canvas2" aria-label="Canvas des saveurs"></canvas>
+  </section>
+
+  <script>
+  (function(){
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1)); // cap DPR to keep perf reasonable
+    const canvas = document.getElementById('canvas2');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('scoreText');
+
+    // Visual constants (will be scaled against width/height in setup())
+    let w=0,h=0; // logical pixels
+    let tubeW=60, tubeH=150, gap=20, circleR=30; // base metrics
+
+    const flavorsByLang = {
+      fr:[
+        ['Citron','Chocolat','Coco','Menthe','Fraise','Orange','Vanille','Raisin','Pomme','Myrtille'],
+        ['Framboise','Cerise','Banane','Mangue','Ananas','Kiwi','Pêche','Abricot','Grenade','Passion'],
+        ['Noisette','Caramel','Miel','Lavande','Yuzu','Thé vert','Gingembre','Pistache','Sésame','Chocolat blanc']
+      ],
+      en:[
+        ['Lemon','Chocolate','Coconut','Mint','Strawberry','Orange','Vanilla','Grape','Apple','Blueberry'],
+        ['Raspberry','Cherry','Banana','Mango','Pineapple','Kiwi','Peach','Apricot','Pomegranate','Passion Fruit'],
+        ['Hazelnut','Salted Caramel','Honey','Lavender','Yuzu','Green Tea','Ginger','Pistachio','Sesame','White Chocolate']
+      ],
+      es:[
+        ['Limón','Chocolate','Coco','Menta','Fresa','Naranja','Vainilla','Uva','Manzana','Arándano'],
+        ['Frambuesa','Cereza','Plátano','Mango','Piña','Kiwi','Melocotón','Albaricoque','Granada','Maracuyá'],
+        ['Avellana','Caramelo salado','Miel','Lavanda','Yuzu','Té verde','Jengibre','Pistacho','Sésamo','Chocolate blanco']
+      ],
+      de:[
+        ['Zitrone','Schokolade','Kokos','Minze','Erdbeere','Orange','Vanille','Traube','Apfel','Heidelbeere'],
+        ['Himbeere','Kirsche','Banane','Mango','Ananas','Kiwi','Pfirsich','Aprikose','Granatapfel','Passionsfrucht'],
+        ['Haselnuss','Karamell','Honig','Lavendel','Yuzu','Grüner Tee','Ingwer','Pistazie','Sesam','Weiße Schokolade']
+      ],
+      it:[
+        ['Limone','Cioccolato','Cocco','Menta','Fragola','Arancia','Vaniglia','Uva','Mela','Mirtillo'],
+        ['Lampone','Ciliegia','Banana','Mango','Ananas','Kiwi','Pesca','Albicocca','Melograno','Frutto della passione'],
+        ['Nocciola','Caramello salato','Miele','Lavanda','Yuzu','Tè verde','Zenzero','Pistacchio','Sesamo','Cioccolato bianco']
+      ]
+    };
+
+    const colorsLists = [
+      ['yellow','brown','white','green','red','orange','beige','purple','lightgreen','blue'],
+      ['purple','red','yellow','orange','yellow','green','peach','apricot','red','purple'],
+      ['brown','brown','yellow','lavender','yellow','green','grey','green','beige','white']
+    ];
+
+    let lang='fr', round=0, score=0;
+    let clicked = new Set();
+    let tubes = []; // {x,y,color,flavor}
+    let bubbles = []; // {x,y,r,color,v}
+
+    // Resize helper to keep canvas crisp across DPR and CSS scaling
+    function resizeCanvasToDisplaySize(){
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const displayW = Math.floor(cssW * dpr);
+      const displayH = Math.floor(cssH * dpr);
+      if(canvas.width !== displayW || canvas.height !== displayH){
+        canvas.width = displayW; canvas.height = displayH;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale drawing back to CSS pixels
+      }
+      w = cssW; h = cssH;
+    }
+
+    function setup(){
+      resizeCanvasToDisplaySize();
+
+      // Scale UI metrics to width for small screens
+      const scale = Math.max(.85, Math.min(1.25, w/900));
+      tubeW = 60 * scale; tubeH = 150 * scale; gap = 20 * scale; circleR = 30 * scale;
+
+      tubes = [];
+      const flavors = flavorsByLang[lang][round % flavorsByLang[lang].length];
+      const colors = colorsLists[round % colorsLists.length];
+      const count = flavors.length;
+
+      // ====== NOUVEAU : mise en page 5 par ligne ======
+      const perRow = 5;
+      const rows = Math.ceil(count / perRow);
+      const rowGap = Math.max(gap * 2, 30 * (h/600));
+
+      // Calcul de la hauteur totale pour centrer verticalement
+      const totalH = rows * tubeH + (rows - 1) * rowGap;
+      const startY = Math.max((h - totalH) / 2 + tubeH / 2, tubeH/2 + 20);
+
+      for(let i=0;i<count;i++){
+        const row = Math.floor(i / perRow);
+        const col = i % perRow;
+        const thisRowCount = (row === rows - 1) ? (count - row * perRow) : perRow;
+        const rowTotalW = thisRowCount * tubeW + (thisRowCount - 1) * gap;
+        const rowStartX = (w - rowTotalW) / 2 + tubeW / 2;
+        const x = rowStartX + col * (tubeW + gap);
+        const y = startY + row * (tubeH + rowGap);
+        tubes.push({ x, y, color: colors[i], flavor: flavors[i] });
+      }
+      // ================================================
+
+      scoreEl.textContent = `Score : ${score}/${tubes.length}`;
+    }
+
+    // Debounced resize
+    let resizeT;
+    window.addEventListener('resize', ()=>{ clearTimeout(resizeT); resizeT = setTimeout(()=>{ setup(); }, 120); });
+
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+
+      // Canvas score (duplicate of DOM text so it's visible in recording/exports)
+      ctx.save();
+      ctx.font = `${Math.max(16, Math.round(20*(w/900)))}px sans-serif`;
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Score : ${score}/${tubes.length}`, w/2, 28);
+      ctx.restore();
+
+      // Tubes + labels
+      tubes.forEach(t =>{
+        ctx.save();
+        ctx.translate(t.x, t.y);
+        // Tube shape
+        ctx.beginPath();
+        ctx.moveTo(-tubeW/2, -tubeH/2);
+        ctx.lineTo(-tubeW/2, tubeH/2 - 5);
+        ctx.arc(0, tubeH/2 - 5, tubeW/2, Math.PI, 0);
+        ctx.lineTo(tubeW/2, -tubeH/2);
+        ctx.closePath();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+        // Rim
+        ctx.beginPath();
+        ctx.arc(0, tubeH/2 - 5, tubeW/2, 0, Math.PI*2);
+        ctx.stroke();
+        // Flavor circle
+        const cy = tubeH/2 - 30* (tubeH/150);
+        ctx.beginPath();
+        ctx.arc(0, cy, circleR, 0, Math.PI*2);
+        ctx.fillStyle = t.color;
+        ctx.fill();
+        // Label
+        ctx.fillStyle = '#111';
+        ctx.font = `${Math.max(12, Math.round(16*(w/900)))}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(t.flavor, 0, cy + circleR + 18);
+        ctx.restore();
+      });
+
+      // Bubbles (rayon légèrement augmenté)
+      bubbles.forEach(b =>{
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        ctx.fillStyle = b.color;
+        ctx.fill();
+        if(b.color === 'white'){
+          ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+        }
+      });
+    }
+
+    function update(dt){
+      for(let i=bubbles.length-1;i>=0;i--){
+        const b = bubbles[i];
+        b.y -= b.v * dt;
+        if(b.y + b.r < 0){ bubbles.splice(i,1); }
+      }
+    }
+
+    let last=0; function loop(ts){ const dt = (ts-last)/1000; last = ts; update(dt); draw(); requestAnimationFrame(loop); }
+
+    // Interactions
+    canvas.addEventListener('mousemove', (e)=>{
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
+      let hover=false;
+      tubes.forEach(t=>{ const cx=t.x, cy=t.y + (tubeH/2 - 30*(tubeH/150)); if(Math.hypot(mx-cx, my-cy) < circleR) hover=true; });
+      canvas.style.cursor = hover? 'pointer':'default';
+    });
+
+    canvas.addEventListener('click', (e)=>{
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
+      tubes.forEach((t,i)=>{
+        const cx=t.x, cy=t.y + (tubeH/2 - 30*(tubeH/150));
+        if(Math.hypot(mx-cx, my-cy) < circleR){
+          // Emit bubbles (légèrement plus grandes)
+          for(let k=0;k<22;k++){
+            bubbles.push({ x: cx + (Math.random()*circleR - circleR/2), y: cy + (Math.random()*circleR - circleR/2), r: Math.random()*12 + 6, color: t.color, v: Math.random()*50 + 20 });
+          }
+          // Score seulement au premier clic de ce cercle
+          if(!clicked.has(i)){
+            clicked.add(i); score++; scoreEl.textContent = `Score : ${score}/${tubes.length}`;
+            if(clicked.size === tubes.length){ setTimeout(()=>{ alert('Bravo ! Vous avez complété ce tour.'); nextRound(); }, 100); }
+          }
+        }
+      });
+    });
+
+    function nextRound(){ round++; score=0; clicked.clear(); bubbles=[]; setup(); }
+
+    // Language switching
+    document.querySelectorAll('.lang-buttons button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const newLang = btn.getAttribute('data-lang');
+        if(newLang !== lang){ lang = newLang; document.querySelectorAll('.lang-buttons button').forEach(b=>b.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true'); nextRound(); }
+      });
+    });
+
+    // Init
+    setup(); requestAnimationFrame(loop);
+  })();
+  </script>
+
+  <footer>
+    <p>&copy; J'apprends les Saveurs — Tous droits réservés (créé par Joel Sandé, Saguenay). À but éducatif : j'apprends en m'amusant. Maternelle, Garderie, 2ans +<br>Merci de partager massivement ce jeu éducatif !</p>
+  </footer>
+</body>
+</html>
