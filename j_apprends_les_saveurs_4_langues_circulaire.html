@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J'apprends les saveurs</title>
+  <style>
+    :root{ --container-w: min(100%, 1100px); }
+    *{ box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+    body { display: flex; flex-direction: column; align-items: center; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .score-text { width: var(--container-w); text-align: center; font-size: 1.25rem; font-weight: 600; padding: 10px 0; }
+    .page-nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; justify-content: center; width: var(--container-w); padding: 10px 12px 0; font-size: .95rem; }
+    .page-nav a { color: #333; text-decoration: none; border-bottom: 1px solid transparent; }
+    .page-nav a:hover { border-bottom-color: #333; }
+    .page-nav a[aria-current="page"] { font-weight: 700; color: #111; }
+    .lang-buttons { width: var(--container-w); display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; padding: 0 0 10px; }
+    .lang-buttons button { padding: 5px 10px; font-size: 1rem; cursor: pointer; }
+    .educative-video { display: block; width: min(90vw, 22vw); height: 25vh; max-width: 440px; margin: 0 auto 10px; }
+    .canvas-container { width: var(--container-w); height: 65vh; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+    canvas { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <nav class="page-nav" aria-label="Navigation entre les jeux">
+    <a href="index.html">Accueil</a>
+    <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html">Éprouvettes</a>
+    <a href="j_apprends_les_saveurs_4_langues_circulaire.html" aria-current="page">Circulaire</a>
+  </nav>
+
+  <div class="score-text" id="scoreDisplay">Score : 0/10</div>
+
+  <div class="lang-buttons">
+    <button data-lang="fr">FR</button>
+    <button data-lang="en">EN</button>
+    <button data-lang="es">ES</button>
+    <button data-lang="de">DE</button>
+    <button data-lang="it">IT</button>
+  </div>
+
+  <!-- Vidéo éducative -->
+  <video class="educative-video" controls>
+    <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+    Votre navigateur ne supporte pas la lecture de vidéos.
+  </video>
+
+  <div class="canvas-container">
+    <canvas id="canvas2"></canvas>
+  </div>
+
+  <script>
+    // Exemples de listes de saveurs par langue
+    const flavorsByLang = {
+      fr: [
+        ['Citron','Chocolat','Coco','Menthe','Fraise','Orange','Vanille','Raisin','Pomme','Myrtille'],
+        ['Framboise','Cerise','Banane','Mangue','Ananas','Kiwi','Pêche','Abricot','Grenade','Passion'],
+        ['Noisette','Caramel salé','Miel','Lavande','Yuzu','Thé vert','Gingembre','Pistache','Sésame','Chocolat blanc']
+      ],
+      en: [
+        ['Lemon','Chocolate','Coconut','Mint','Strawberry','Orange','Vanilla','Grape','Apple','Blueberry'],
+        ['Raspberry','Cherry','Banana','Mango','Pineapple','Kiwi','Peach','Apricot','Pomegranate','Passion Fruit'],
+        ['Hazelnut','Salted Caramel','Honey','Lavender','Yuzu','Green Tea','Ginger','Pistachio','Sesame','White Chocolate']
+      ],
+      es: [
+        ['Limón','Chocolate','Coco','Menta','Fresa','Naranja','Vainilla','Uva','Manzana','Arándano'],
+        ['Frambuesa','Cereza','Plátano','Mango','Piña','Kiwi','Melocotón','Albaricoque','Granada','Maracuyá'],
+        ['Avellana','Caramelo Salado','Miel','Lavanda','Yuzu','Té Verde','Jengibre','Pistacho','Sésamo','Chocolate Blanco']
+      ],
+      de: [
+        ['Zitrone','Schokolade','Kokos','Minze','Erdbeere','Orange','Vanille','Traube','Apfel','Blaubeere'],
+        ['Himbeere','Kirsche','Banane','Mango','Ananas','Kiwi','Pfirsich','Aprikose','Granatapfel','Passionsfrucht'],
+        ['Haselnuss','Gesalzener Karamell','Honig','Lavendel','Yuzu','Grüner Tee','Ingwer','Pistazie','Sesam','Weiße Schokolade']
+      ],
+      it: [
+        ['Limone','Cioccolato','Cocco','Menta','Fragola','Arancia','Vaniglia','Uva','Mela','Mirtillo'],
+        ['Lampone','Ciliegia','Banana','Mango','Ananas','Kiwi','Pesca','Albicocca','Melograno','Frutto della Passione'],
+        ['Nocciola','Caramello Salato','Miele','Lavanda','Yuzu','Tè Verde','Zenzero','Pistacchio','Sesamo','Cioccolato Bianco']
+      ]
+    };
+
+    // Couleurs représentatives de chaque saveur, alignées sur flavorsByLang.fr (même ordre pour toutes les langues)
+    const colorsLists = [
+      ['yellow','saddlebrown','white','mediumseagreen','red','orange','beige','purple','yellowgreen','royalblue'],
+      ['crimson','red','gold','orange','gold','yellowgreen','peachpuff','sandybrown','firebrick','purple'],
+      ['tan','peru','gold','lavender','gold','darkseagreen','peru','yellowgreen','wheat','ivory']
+    ];
+
+    let currentLang = 'fr';
+    let round = 0;
+    let clicked = new Set();
+    let score = 0;
+
+    const canvas = document.getElementById('canvas2');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', () => { resize(); setup(); });
+    window.addEventListener('load', () => { resize(); setup(); });
+    resize();
+
+    document.querySelectorAll('.lang-buttons button').forEach(btn => {
+      btn.onclick = () => {
+        currentLang = btn.dataset.lang;
+        nextRound(true);
+      };
+    });
+
+    // Flavors and circles for this round
+    let flavors = [];
+    let circles = [];
+
+    function setup() {
+      clicked.clear();
+      flavors = flavorsByLang[currentLang][round % 3];
+      const colors = colorsLists[round % colorsLists.length];
+      circles = flavors.map((label, i) => ({
+        label,
+        x: canvas.width / 2 + Math.cos((i / flavors.length) * 2 * Math.PI) * 150,
+        y: canvas.height / 2 + Math.sin((i / flavors.length) * 2 * Math.PI) * 150,
+        r: 30,
+        color: colors[i]
+      }));
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      circles.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, 2 * Math.PI);
+        ctx.fillStyle = clicked.has(c.label) ? '#ccc' : c.color;
+        ctx.fill();
+        if (c.color === 'white') {
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#999';
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#000';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(c.label, c.x, c.y + c.r + 16);
+      });
+    }
+
+    // Bubble class
+    class Bubble {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.r = 6 + Math.random() * 12; // plus larger bubbles
+        this.alpha = 1;
+      }
+      update() {
+        this.y -= 1 + Math.random() * 2;
+        this.alpha -= 0.01;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(173,216,230,${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    let bubbles = [];
+
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      circles.forEach(c => {
+        const dist = Math.hypot(mx - c.x, my - c.y);
+        if (dist < c.r) {
+          // generate bubbles for any click
+          for (let i = 0; i < 20; i++) bubbles.push(new Bubble(c.x, c.y));
+          // update score only first time
+          if (!clicked.has(c.label)) {
+            clicked.add(c.label);
+            score = clicked.size;
+            // display score
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/10`;
+            if (clicked.size === circles.length) setTimeout(nextRound, 500);
+          }
+        }
+      });
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      draw();
+      bubbles.forEach((b, i) => {
+        b.update();
+        b.draw();
+        if (b.alpha <= 0) bubbles.splice(i, 1);
+      });
+      requestAnimationFrame(animate);
+    }
+
+    function nextRound(force = false) {
+      if (clicked.size === circles.length || force) {
+        round++;
+        score = 0;
+        document.getElementById('scoreDisplay').textContent = `Score: 0/10`;
+        bubbles = [];
+        setup();
+      }
+    }
+
+    // Init
+    setup();
+    animate();
+  </script>
+
+  <footer>
+    <p>&copy; J'apprends les Saveurs — Tous droits réservés (créé par Joel Sandé, Saguenay). À but éducatif : j'apprends en m'amusant. Maternelle, Garderie, 2ans +<br>Merci de partager massivement ce jeu éducatif !</p>
+  </footer>
+
+</body>
+</html>
