@@ -3,49 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J'apprends les saveurs</title>
+  <title>J'apprends les saveurs — mode circulaire</title>
+  <meta name="description" content="Roue circulaire des saveurs : retrouve chaque saveur en 5 langues, avec vidéo éducative. Jeu gratuit dès 2 ans." />
+  <link rel="stylesheet" href="style.css" />
   <style>
     :root{ --container-w: min(100%, 1100px); }
-    *{ box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
-    body { display: flex; flex-direction: column; align-items: center; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .score-text { width: var(--container-w); text-align: center; font-size: 1.25rem; font-weight: 600; padding: 10px 0; }
-    .page-nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; justify-content: center; width: var(--container-w); padding: 10px 12px 0; font-size: .95rem; }
-    .page-nav a { color: #333; text-decoration: none; border-bottom: 1px solid transparent; }
-    .page-nav a:hover { border-bottom-color: #333; }
-    .page-nav a[aria-current="page"] { font-weight: 700; color: #111; }
-    .lang-buttons { width: var(--container-w); display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; padding: 0 0 10px; }
-    .lang-buttons button { padding: 5px 10px; font-size: 1rem; cursor: pointer; }
-    .educative-video { display: block; width: min(90vw, 22vw); height: 25vh; max-width: 440px; margin: 0 auto 10px; }
+    html, body { width: 100%; overflow-x: hidden; }
+    /* Cadre général de la page (hors pied de page) */
+    .page-frame {
+      width: 90vw; margin: 0 auto; box-sizing: border-box;
+      border: 3px solid #333; border-radius: 16px; padding: 12px 0 24px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .page-nav, .lang-buttons, .score-text { width: var(--container-w); }
+    .score-text { text-align: center; font-size: 1.25rem; font-weight: 600; padding: 10px 0; }
+    .educative-video{ width:min(90vw, 22vw); height:25vh; max-width:440px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.12)}
     .canvas-container { width: var(--container-w); height: 65vh; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
     canvas { display: block; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
-  <nav class="page-nav" aria-label="Navigation entre les jeux">
-    <a href="index.html">Accueil</a>
-    <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html">Éprouvettes</a>
-    <a href="j_apprends_les_saveurs_4_langues_circulaire.html" aria-current="page">Circulaire</a>
-  </nav>
+  <div class="page-frame fade-in">
+    <nav class="page-nav" aria-label="Navigation entre les jeux">
+      <a href="index.html">Accueil</a>
+      <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html">Éprouvettes</a>
+      <a href="j_apprends_les_saveurs_4_langues_circulaire.html" aria-current="page">Circulaire</a>
+    </nav>
 
-  <div class="score-text" id="scoreDisplay">Score : 0/10</div>
+    <div class="score-text" id="scoreDisplay">Score : 0/10</div>
 
-  <div class="lang-buttons">
-    <button data-lang="fr">FR</button>
-    <button data-lang="en">EN</button>
-    <button data-lang="es">ES</button>
-    <button data-lang="de">DE</button>
-    <button data-lang="it">IT</button>
-  </div>
+    <div class="lang-buttons">
+      <button data-lang="fr">FR</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="es">ES</button>
+      <button data-lang="de">DE</button>
+      <button data-lang="it">IT</button>
+    </div>
 
-  <!-- Vidéo éducative -->
-  <video class="educative-video" controls>
-    <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
-    Votre navigateur ne supporte pas la lecture de vidéos.
-  </video>
+    <!-- Vidéo éducative -->
+    <video class="educative-video" controls>
+      <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+      Votre navigateur ne supporte pas la lecture de vidéos.
+    </video>
 
-  <div class="canvas-container">
-    <canvas id="canvas2"></canvas>
+    <div class="canvas-container">
+      <canvas id="canvas2"></canvas>
+    </div>
   </div>
 
   <script>

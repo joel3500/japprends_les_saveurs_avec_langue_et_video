@@ -3,21 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>J'apprends les saveurs</title>
+  <title>J'apprends les saveurs — jeu éducatif en 5 langues</title>
+  <meta name="description" content="Jeu éducatif gratuit pour apprendre les saveurs en s'amusant, dès 2 ans. Disponible en 5 langues, avec vidéo pédagogique. Choisis le mode Éprouvettes ou le mode Circulaire !" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="J'apprends les saveurs" />
+  <meta property="og:description" content="Jeu éducatif gratuit pour apprendre les saveurs en s'amusant, dès 2 ans. Disponible en 5 langues, avec vidéo pédagogique." />
+  <meta property="og:image" content="lapin_saveur_2.jpg" />
+  <link rel="stylesheet" href="style.css" />
   <style>
-    *{box-sizing:border-box}
-    html, body{margin:0; padding:0;}
-    body{
-      display:flex; flex-direction:column; align-items:center;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      min-height:100vh; padding:24px 16px; text-align:center;
-    }
+    body{ padding:32px 16px; text-align:center; }
 
     h1{
       font-size:clamp(2.5rem, 7vw, 5rem);
-      margin:0 0 32px;
+      margin:0 0 10px;
       font-weight:800;
       color:#111;
+    }
+
+    .tagline{
+      margin:0 0 18px;
+      font-size:clamp(1rem, 2vw, 1.25rem);
+      color:var(--clr-muted);
+      max-width:640px;
+    }
+
+    .badges{
+      display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem;
+      margin-bottom:32px;
+    }
+    .badges span{
+      background:#fff;
+      color:var(--clr-primary-dark);
+      font-weight:700;
+      font-size:.85rem;
+      padding:.4em 1em;
+      border-radius:999px;
+      box-shadow:var(--shadow-soft);
     }
 
     .hero{
@@ -49,19 +70,27 @@
       padding:.75em 1.5em;
       border-radius:999px;
       box-shadow:0 3px 10px rgba(0,0,0,.3);
-      transition:transform .15s ease, background .15s ease;
+      transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
     .hero-links a:hover{
-      transform:scale(1.06);
+      transform:translateY(-2px) scale(1.06);
       background:#fff;
+      box-shadow:0 6px 16px rgba(0,0,0,.35);
     }
   </style>
 </head>
 <body>
 
-  <h1>J'apprends les saveurs</h1>
+  <h1 class="fade-in">J'apprends les saveurs</h1>
+  <p class="tagline fade-in">Un jeu éducatif ludique pour apprendre à reconnaître les saveurs en s'amusant, dès 2 ans.</p>
+  <div class="badges fade-in">
+    <span>5 langues</span>
+    <span>Vidéo éducative</span>
+    <span>Dès 2 ans</span>
+    <span>100% gratuit</span>
+  </div>
 
-  <div class="hero">
+  <div class="hero fade-in">
     <img src="lapin_saveur_2.jpg" alt="Lapin qui apprend les saveurs" />
     <div class="hero-links">
       <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html">Éprouvettes</a>
@@ -72,6 +101,6 @@
   <footer>
     <p>&copy; J'apprends les Saveurs — Tous droits réservés (créé par Joel Sandé, Saguenay). À but éducatif : j'apprends en m'amusant. Maternelle, Garderie, 2ans +<br>Merci de partager massivement ce jeu éducatif !</p>
   </footer>
-  
+
 </body>
 </html>

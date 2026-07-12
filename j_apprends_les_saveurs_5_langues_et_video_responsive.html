@@ -4,26 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>J'apprends les saveurs — 5 langues + vidéo (Responsive)</title>
+  <meta name="description" content="Éprouvettes à saveurs : retrouve chaque saveur en 5 langues, avec vidéo éducative. Jeu gratuit dès 2 ans." />
+  <link rel="stylesheet" href="style.css" />
   <style>
     :root{
       --container-w: min(100vw, 1100px);
       --canvas-h: 70vh; /* base height for desktop */
     }
 
-    *{box-sizing:border-box}
-    html, body{margin:0; padding:0;}
-    body{display:flex; flex-direction:column; align-items:center; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+    /* Cadre général de la page (hors pied de page) */
+    .page-frame{ width:90vw; margin:0 auto; box-sizing:border-box; border:3px solid #333; border-radius:16px; padding:12px 0 24px; display:flex; flex-direction:column; align-items:center; }
 
-    /* Navigation entre les 3 pages */
-    .page-nav{display:flex; flex-wrap:wrap; gap:.5rem 1.25rem; justify-content:center; width:var(--container-w); padding:10px 12px 0; font-size:.95rem}
-    .page-nav a{color:#333; text-decoration:none; border-bottom:1px solid transparent}
-    .page-nav a:hover{border-bottom-color:#333}
-    .page-nav a[aria-current="page"]{font-weight:700; color:#111}
-
-    /* Language buttons row */
-    .lang-buttons{display:flex; flex-wrap:wrap; gap:.5rem; padding:12px; width:var(--container-w); justify-content:center}
-    .lang-buttons button{padding:.5rem .75rem; font-size:clamp(.9rem, 1.5vw, 1rem); border:1px solid #aaa; background:#fff; border-radius:8px; cursor:pointer}
-    .lang-buttons button[aria-pressed="true"]{background:#111; color:#fff; border-color:#111}
+    .page-nav, .lang-buttons{ width:var(--container-w) }
 
     /* Main container */
     .canvas-container{width:var(--container-w); display:flex; flex-direction:column; align-items:center; gap:10px; padding:8px}
@@ -35,9 +27,7 @@
     .educative-video{ width:min(90vw, 22vw); height:25vh; max-width:440px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.12)}
 
     /* Canvas : largeur fluide ; hauteur contrôlée par CSS, netteté assurée en JS (DPR) */
-    canvas{ width:80%; height:var(--canvas-h); border:1px solid #333; border-radius:12px }
-
-    footer{ width:100%; padding:18px 10px; text-align:center; color:#666 }
+    canvas{ width:80%; height:var(--canvas-h) }
 
     /* Breakpoints */
     @media (max-width: 900px){
@@ -56,28 +46,30 @@
 </head>
 <body>
 
-  <nav class="page-nav" aria-label="Navigation entre les jeux">
-    <a href="index.html">Accueil</a>
-    <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html" aria-current="page">Éprouvettes</a>
-    <a href="j_apprends_les_saveurs_4_langues_circulaire.html">Circulaire</a>
-  </nav>
+  <div class="page-frame fade-in">
+    <nav class="page-nav" aria-label="Navigation entre les jeux">
+      <a href="index.html">Accueil</a>
+      <a href="j_apprends_les_saveurs_5_langues_et_video_responsive.html" aria-current="page">Éprouvettes</a>
+      <a href="j_apprends_les_saveurs_4_langues_circulaire.html">Circulaire</a>
+    </nav>
 
-  <nav class="lang-buttons" aria-label="Sélection de la langue">
-    <button data-lang="fr" aria-pressed="true">FR</button>
-    <button data-lang="en">EN</button>
-    <button data-lang="es">ES</button>
-    <button data-lang="de">DE</button>
-    <button data-lang="it">IT</button>
-  </nav>
+    <nav class="lang-buttons" aria-label="Sélection de la langue">
+      <button data-lang="fr" aria-pressed="true">FR</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="es">ES</button>
+      <button data-lang="de">DE</button>
+      <button data-lang="it">IT</button>
+    </nav>
 
-  <section class="canvas-container" aria-label="Zone de jeu">
-    <div class="score-text" id="scoreText">Score : 0/10</div>
-    <video class="educative-video" controls aria-label="Vidéo éducative">
-      <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
-      Votre navigateur ne supporte pas la lecture vidéo.
-    </video>
-    <canvas id="canvas2" aria-label="Canvas des saveurs"></canvas>
-  </section>
+    <section class="canvas-container" aria-label="Zone de jeu">
+      <div class="score-text" id="scoreText">Score : 0/10</div>
+      <video class="educative-video" controls aria-label="Vidéo éducative">
+        <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+        Votre navigateur ne supporte pas la lecture vidéo.
+      </video>
+      <canvas id="canvas2" aria-label="Canvas des saveurs"></canvas>
+    </section>
+  </div>
 
   <script>
   (function(){
