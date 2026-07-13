@@ -148,23 +148,28 @@
       });
     }
 
-    // Bubble class
+    // Bubble class (bulles de la couleur de la saveur cliquée, comme sur la page éprouvettes)
     class Bubble {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.r = 6 + Math.random() * 12; // plus larger bubbles
-        this.alpha = 1;
+      constructor(x, y, color) {
+        this.x = x + (Math.random() * 40 - 20);
+        this.y = y + (Math.random() * 40 - 20);
+        this.r = 6 + Math.random() * 12;
+        this.color = color;
+        this.v = 1 + Math.random() * 2;
       }
       update() {
-        this.y -= 1 + Math.random() * 2;
-        this.alpha -= 0.01;
+        this.y -= this.v;
       }
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
-        ctx.fillStyle = `rgba(173,216,230,${this.alpha})`;
+        ctx.fillStyle = this.color;
         ctx.fill();
+        if (this.color === 'white') {
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#000';
+          ctx.stroke();
+        }
       }
     }
 
@@ -178,7 +183,7 @@
         const dist = Math.hypot(mx - c.x, my - c.y);
         if (dist < c.r) {
           // generate bubbles for any click
-          for (let i = 0; i < 20; i++) bubbles.push(new Bubble(c.x, c.y));
+          for (let i = 0; i < 20; i++) bubbles.push(new Bubble(c.x, c.y, c.color));
           // update score only first time
           if (!clicked.has(c.label)) {
             clicked.add(c.label);
@@ -197,7 +202,7 @@
       bubbles.forEach((b, i) => {
         b.update();
         b.draw();
-        if (b.alpha <= 0) bubbles.splice(i, 1);
+        if (b.y + b.r < 0) bubbles.splice(i, 1);
       });
       requestAnimationFrame(animate);
     }
