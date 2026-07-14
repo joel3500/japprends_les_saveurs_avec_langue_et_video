@@ -63,8 +63,7 @@
 
     <section class="canvas-container" aria-label="Zone de jeu">
       <div class="score-text" id="scoreText">Score : 0/10</div>
-      <video class="educative-video" controls aria-label="Vidéo éducative">
-        <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+      <video id="eduVideo" class="educative-video" controls aria-label="Vidéo éducative" src="videos/Bunnie_apprendre_les_saveurs_Francais.mp4">
         Votre navigateur ne supporte pas la lecture vidéo.
       </video>
       <canvas id="canvas2" aria-label="Canvas des saveurs"></canvas>
@@ -115,6 +114,16 @@
       ['purple','red','yellow','orange','yellow','green','peach','apricot','red','purple'],
       ['brown','brown','yellow','lavender','yellow','green','grey','green','beige','white']
     ];
+
+    const videoSrcByLang = {
+      fr: 'videos/Bunnie_apprendre_les_saveurs_Francais.mp4',
+      en: 'videos/Bunnie_apprendre_les_saveurs_Anglais.mp4',
+      es: 'videos/Bunnie_apprendre_les_saveurs_Espagnole.mp4',
+      de: 'videos/Bunnie_apprendre_les_saveurs_Allemand.mp4',
+      it: 'videos/Bunnie_apprendre_les_saveurs_Italien.mp4'
+    };
+    const videoEl = document.getElementById('eduVideo');
+    function updateVideo(){ videoEl.src = videoSrcByLang[lang]; }
 
     let lang='fr', round=0, score=0;
     let clicked = new Set();
@@ -276,7 +285,7 @@
     document.querySelectorAll('.lang-buttons button').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const newLang = btn.getAttribute('data-lang');
-        if(newLang !== lang){ lang = newLang; document.querySelectorAll('.lang-buttons button').forEach(b=>b.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true'); nextRound(); }
+        if(newLang !== lang){ lang = newLang; document.querySelectorAll('.lang-buttons button').forEach(b=>b.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true'); updateVideo(); nextRound(); }
       });
     });
 

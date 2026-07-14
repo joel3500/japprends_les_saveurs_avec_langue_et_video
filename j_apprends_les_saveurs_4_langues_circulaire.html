@@ -41,8 +41,7 @@
     </div>
 
     <!-- Vidéo éducative -->
-    <video class="educative-video" controls>
-      <source src="Bunnie_apprendre_les_saveurs.mp4" type="video/mp4" />
+    <video id="eduVideo" class="educative-video" controls src="videos/Bunnie_apprendre_les_saveurs_Francais.mp4">
       Votre navigateur ne supporte pas la lecture de vidéos.
     </video>
 
@@ -88,6 +87,16 @@
       ['tan','peru','gold','lavender','gold','darkseagreen','peru','yellowgreen','wheat','ivory']
     ];
 
+    const videoSrcByLang = {
+      fr: 'videos/Bunnie_apprendre_les_saveurs_Francais.mp4',
+      en: 'videos/Bunnie_apprendre_les_saveurs_Anglais.mp4',
+      es: 'videos/Bunnie_apprendre_les_saveurs_Espagnole.mp4',
+      de: 'videos/Bunnie_apprendre_les_saveurs_Allemand.mp4',
+      it: 'videos/Bunnie_apprendre_les_saveurs_Italien.mp4'
+    };
+    const videoEl = document.getElementById('eduVideo');
+    function updateVideo(){ videoEl.src = videoSrcByLang[currentLang]; }
+
     let currentLang = 'fr';
     let round = 0;
     let clicked = new Set();
@@ -107,6 +116,7 @@
     document.querySelectorAll('.lang-buttons button').forEach(btn => {
       btn.onclick = () => {
         currentLang = btn.dataset.lang;
+        updateVideo();
         nextRound(true);
       };
     });
@@ -150,15 +160,15 @@
 
     // Bubble class (bulles de la couleur de la saveur cliquée, comme sur la page éprouvettes)
     class Bubble {
-      constructor(x, y, color) {
-        this.x = x + (Math.random() * 40 - 20);
-        this.y = y + (Math.random() * 40 - 20);
-        this.r = 6 + Math.random() * 12;
+      constructor(x, y, color, spread) {
+        this.x = x + (Math.random() * spread - spread / 2);
+        this.y = y + (Math.random() * spread - spread / 2);
+        this.r = Math.random() * 12 + 6;
         this.color = color;
-        this.v = 1 + Math.random() * 2;
+        this.v = Math.random() * 50 + 20; // px/sec
       }
-      update() {
-        this.y -= this.v;
+      update(dt) {
+        this.y -= this.v * dt;
       }
       draw() {
         ctx.beginPath();
@@ -183,7 +193,7 @@
         const dist = Math.hypot(mx - c.x, my - c.y);
         if (dist < c.r) {
           // generate bubbles for any click
-          for (let i = 0; i < 20; i++) bubbles.push(new Bubble(c.x, c.y, c.color));
+          for (let i = 0; i < 20; i++) bubbles.push(new Bubble(c.x, c.y, c.color, c.r));
           // update score only first time
           if (!clicked.has(c.label)) {
             clicked.add(c.label);
@@ -196,11 +206,14 @@
       });
     });
 
-    function animate() {
+    let lastTs = 0;
+    function animate(ts) {
+      const dt = lastTs ? (ts - lastTs) / 1000 : 0;
+      lastTs = ts;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       draw();
       bubbles.forEach((b, i) => {
-        b.update();
+        b.update(dt);
         b.draw();
         if (b.y + b.r < 0) bubbles.splice(i, 1);
       });
@@ -219,7 +232,7 @@
 
     // Init
     setup();
-    animate();
+    requestAnimationFrame(animate);
   </script>
 
   <footer>
