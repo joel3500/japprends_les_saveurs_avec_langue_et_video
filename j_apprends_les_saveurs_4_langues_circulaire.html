@@ -95,7 +95,7 @@
       it: 'videos/Bunnie_apprendre_les_saveurs_Italien.mp4'
     };
     const videoEl = document.getElementById('eduVideo');
-    function updateVideo(){ videoEl.src = videoSrcByLang[currentLang]; }
+    function updateVideo(){ videoEl.src = videoSrcByLang[currentLang]; videoEl.load(); }
 
     let currentLang = 'fr';
     let round = 0;
